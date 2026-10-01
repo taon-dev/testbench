@@ -1,361 +1,784 @@
 //#region imports
+
 import * as os from 'os'; // @backend
 
-import { AsyncPipe, JsonPipe, NgFor } from '@angular/common'; // @browser
 import {
-  inject,
-  Injectable,
   APP_INITIALIZER,
   ApplicationConfig,
-  provideBrowserGlobalErrorListeners,
+  Component,
+  Injectable,
+  OnInit,
+  inject,
   isDevMode,
   mergeApplicationConfig,
+  provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
   signal,
 } from '@angular/core'; // @browser
-import { Component } from '@angular/core'; // @browser
-import { VERSION, OnInit } from '@angular/core'; // @browser
-import { toSignal } from '@angular/core/rxjs-interop'; // @browser
 import { MatButtonModule } from '@angular/material/button'; // @browser
-import { MatCardModule } from '@angular/material/card'; // @browser
-import { MatDialog } from '@angular/material/dialog'; // @browser
-import { MatDividerModule } from '@angular/material/divider'; // @browser
-import { MatIconModule } from '@angular/material/icon'; // @browser
-import { MatListModule } from '@angular/material/list'; // @browser
-import { MatTabsModule } from '@angular/material/tabs'; // @browser
 import {
   provideClientHydration,
   withEventReplay,
 } from '@angular/platform-browser';
 import {
-  provideRouter,
-  Router,
-  RouterLinkActive,
-  RouterModule,
-  RouterOutlet,
-  ActivatedRoute,
   Routes,
-  Route,
-  withHashLocation,
+  provideRouter,
   withComponentInputBinding,
+  withHashLocation,
 } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
-import { provideServerRendering, withRoutes } from '@angular/ssr';
 import { RenderMode, ServerRoute } from '@angular/ssr';
+import { provideServerRendering, withRoutes } from '@angular/ssr';
 import Aura from '@primeng/themes/aura'; // @browser
 import { Translation, TranslationManager } from '@taon-dev/i18n/src';
-// TranslationManager.globalDefautlLanguageOverride = 'pl-PL';
-import { TranslateDirective } from '@taon-dev/i18n/src'; // @browser
 import { providePrimeNG } from 'primeng/config'; // @browser
-import { BehaviorSubject, Observable, map, switchMap } from 'rxjs';
 import {
-  Taon,
-  TaonBaseContext,
-  TAON_CONTEXT,
-  EndpointContext,
-  TaonBaseAngularService,
-  TaonEntity,
-  StringColumn,
-  TaonBaseAbstractEntity,
-  TaonBaseCrudController,
-  TaonController,
   GET,
-  TaonMigration,
-  TaonBaseMigration,
-  TaonContext,
+  TAON_CONTEXT,
+  Taon,
+  TaonBaseAbstractEntity,
+  TaonBaseAngularService,
+  TaonBaseContext,
+  TaonBaseController,
+  TaonController,
+  TaonEntity,
 } from 'taon/src';
-import { TaonAdminService, TaonAdmin } from 'taon/src'; // @browser
+import { TaonAdmin } from 'taon/src'; // @browser
 import { TaonStor } from 'taon-storage/src';
-import {
-  TaonAdminModeConfigurationComponent,
-  TaonNotFoundComponent,
-  TaonSettingsComponent,
-  TaonThemeComponent,
-  TaonThemeService,
-} from 'taon-ui/src'; // @browser
-import { Utils, UtilsOs } from 'tnp-core/src';
+import { _ } from 'tnp-core/src';
 
 import { HOST_CONFIG } from './app.hosts';
 import { ENV_ANGULAR_NODE_APP_BUILD_PWA_DISABLE_SERVICE_WORKER } from './lib/env/env.angular-node-app';
+
 // @placeholder-for-imports
 
 //#endregion
 
 //#region constants
+
 console.log('🚀 [ TAON IS STARTING ]');
+
 const t = Translation.for(Taon.__FILE_RELATIVE_PATH, Taon.LANG_IMPORT_MAP, {
   // debug: true
 });
+
 //#endregion
 
-//#region testbench component
-//#region @browser
-@Component({
-  selector: 'app-root',
+//#region testbench tests
 
-  imports: [
-    // RouterOutlet,
-    AsyncPipe,
-    MatCardModule,
-    MatIconModule,
-    MatDividerModule,
-    MatButtonModule,
-    MatListModule,
-    MatTabsModule,
-    RouterModule,
-    TranslateDirective,
-    TaonAdminModeConfigurationComponent,
-    JsonPipe,
-  ],
-  // // Uncomment to have simples template
-  // template: `
-  //   @if (itemsLoaded()) {
-  //     <router-outlet />
-  //   }
-  // `,
-  template: `
-    <taon-admin-mode-configuration>
-      @if (itemsLoaded()) {
-        @if (navItems.length > 0) {
-          <nav
-            mat-tab-nav-bar
-            class="shadow-1"
-            [tabPanel]="tabPanel">
-            @for (item of navItems; track item.path) {
-              <a
-                mat-tab-link
-                href="javascript:void(0)"
-                [style.text-decoration]="
-                  (activePath === item.path && !forceShowBaseRootApp) ||
-                  ('/' === item.path && forceShowBaseRootApp)
-                    ? 'underline'
-                    : 'none'
-                "
-                (click)="navigateTo(item)">
-                @if (item.path === '/') {
-                  <mat-icon
-                    aria-hidden="false"
-                    aria-label="Example home icon"
-                    fontIcon="home"></mat-icon>
-                } @else {
-                  {{ item.label }}
-                }
-              </a>
-            }
-            <a
-              mat-tab-link
-              href="javascript:void(0)"
-              (click)="openSettings(200, 200)">
-              <mat-icon>settings</mat-icon>
-            </a>
-          </nav>
+export enum TestbenchTest {
+  getBoolean = 'getBoolean',
+  getNumber = 'getNumber',
+  getZero = 'getZero',
+  getString = 'getString',
+  getEmptyString = 'getEmptyString',
+  getNull = 'getNull',
+  getStringArray = 'getStringArray',
+  getNumberArray = 'getNumberArray',
+  getObject = 'getObject',
+  getMappedObject = 'getMappedObject',
+  getMappedObjectRawJson = 'getMappedObjectRawJson',
+  getMappedObjectArray = 'getMappedObjectArray',
+  getMappedObjectArrayRawJson = 'getMappedObjectArrayRawJson',
+  getMixedObject = 'getMixedObject',
+  throwError = 'throwError',
+}
 
-          <mat-tab-nav-panel #tabPanel>
-            @if (!forceShowBaseRootApp) {
-              <router-outlet />
-            }
-          </mat-tab-nav-panel>
-        }
-        @if (navItems.length === 0) {
-          <nav class="shadow-1 w-full p-2">
-            <button
-              mat-icon-button
-              (click)="openDialog(200, 200)">
-              <mat-icon>settings</mat-icon>
-            </button>
-          </nav>
-        }
+type TestBenchTestStatus = 'pending' | 'running' | 'success' | 'failed';
 
-        @if (navItems.length === 0 || forceShowBaseRootApp) {
-          <mat-card class="m-2">
-            <mat-card-content>
-              <h3>{{ t.gettext('Basic app info') }}</h3>
-              {{ t.gettext('Name') }}: testbench<br />
-              {{ t.gettext('Angular version:') }} {{ angularVersion }}<br />
-              {{ t.gettext('Taon backend:') }} {{ taonMode }}<br />
-            </mat-card-content>
-          </mat-card>
+interface TestBenchTestItem {
+  test: TestbenchTest;
+  status: TestBenchTestStatus;
+  error?: string;
+}
 
-          <mat-card class="m-2">
-            <mat-card-content>
-              <h3>{{ exampleUserTitle() }}</h3>
-              <ul>
-                @for (user of users(); track user.id) {
-                  <li class="p-1">
-                    {{ user | json }}
-                    <button
-                      mat-flat-button
-                      (click)="deleteUser(user)">
-                      <mat-icon>delete user</mat-icon>
-                    </button>
-                  </li>
-                }
-              </ul>
-              <br />
-              <button
-                class="ml-1"
-                matButton="outlined"
-                (click)="addUser()">
-                {{ t.gettext('Add new example user with random name') }}
-              </button>
-            </mat-card-content>
-          </mat-card>
+//#endregion
 
-          <mat-card class="m-2">
-            <mat-card-content>
-              <h3 translate>Example hello world from backend API:</h3>
-              {{ t.gettext('hello world from backend:') }}
-              <strong>{{ hello$ | async }}</strong>
-            </mat-card-content>
-          </mat-card>
-        }
-        <footer
-          class="text-center p-4 w-full select-none"
-          (click)="taonAdminService.enableDeveloperIf5Timetap()">
-          {{ t.gettext('Copyright') }} <strong>testbench</strong>
-          {{ year }}
-        </footer>
-      }
-    </taon-admin-mode-configuration>
-  `,
+//#region testbench models
+
+@TaonEntity({
+  className: 'TestBenchPerson',
+  createTable: true,
 })
-export class TestbenchApp implements OnInit {
-  t = t.for(this);
+export class TestBenchPerson extends TaonBaseAbstractEntity {
+  name!: string;
 
-  exampleUserTitle = this.t.signal.gettext('Example users from backend API:');
+  age!: number;
 
-  /**Required for proper theme*/
-  theme = inject(TaonThemeService);
-
-  taonAdminService = inject(TaonAdminService);
-
-  dialog = inject(MatDialog);
-
-  activatedRoute = inject(ActivatedRoute);
-
-  userApiService = inject(UserApiService);
-
-  router = inject(Router);
-
-  itemsLoaded = signal(false);
-
-  year = new Date().getFullYear();
-
-  taonMode = UtilsOs.isRunningInWebSQL() ? 'websql' : 'normal nodejs';
-
-  angularVersion = VERSION.full;
-
-  forceShowBaseRootApp = false;
-
-  private refresh = new BehaviorSubject<void>(undefined);
-
-  get activePath(): string {
-    return globalThis?.location.pathname?.split('?')[0];
-  }
-
-  navItems =
-    TestbenchClientRoutes.length <= 1
-      ? []
-      : TestbenchClientRoutes.filter(r => r.path !== undefined).map(r => ({
-          path: r.path === '' ? '/' : `/${r.path}`,
-          label: r.path === '' ? 'Home' : `${r.path}`,
-        }));
-
-  readonly hello$ = this.userApiService.userController
-    .helloWorld()
-    .request()
-    .observable.pipe(map(r => r.body.text));
-
-  openDialog(
-    enterAnimationDuration: string | number,
-    exitAnimationDuration: string | number,
-  ): void {
-    this.dialog.open(TaonSettingsComponent, {
-      width: '400px',
-      enterAnimationDuration,
-      exitAnimationDuration,
-    });
-  }
-
-  ngOnInit(): void {
-    //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
-    //Add 'implements OnInit' to the class.
-    console.log(globalThis?.location.pathname);
-    // TODO set below from 1000 to zero in production
-    void Taon.removeLoader(1000).then(() => {
-      this.itemsLoaded.set(true);
-    });
-  }
-
-  readonly users = toSignal(
-    this.refresh.pipe(
-      switchMap(() =>
-        this.userApiService.userController
-          .getAll()
-          .request()
-          .observable.pipe(map(r => r.body.json)),
-      ),
-    ),
-    { initialValue: [] },
-  );
-
-  async deleteUser(userToDelete: User): Promise<void> {
-    await this.userApiService.userController
-      .deleteById(userToDelete.id)
-      .request();
-    this.refresh.next();
-  }
-
-  async addUser(): Promise<void> {
-    const newUser = new User();
-    newUser.name = `user-${Math.floor(Math.random() * 1000)}`;
-    await this.userApiService.userController.save(newUser).request();
-    this.refresh.next();
-  }
-
-  navigateTo(item: { path: string; label: string }): void {
-    if (item.path === '/') {
-      if (this.forceShowBaseRootApp) {
-        return;
-      }
-      this.forceShowBaseRootApp = true;
-      return;
-    }
-    this.forceShowBaseRootApp = false;
-    void this.router.navigateByUrl(item.path);
+  get description(): string {
+    return `${this.name} (${this.age})`;
   }
 }
-//#endregion
+
 //#endregion
 
-//#region  testbench api service
+//#region testbench controller
+
+@TaonController({
+  className: 'TestBenchController',
+})
+export class TestBenchController extends TaonBaseController {
+  @GET()
+  [TestbenchTest.getBoolean](): Taon.Response<boolean> {
+    //#region @websqlFunc
+    return async () => {
+      return true;
+    };
+    //#endregion
+  }
+
+  @GET()
+  [TestbenchTest.getNumber](): Taon.Response<number> {
+    //#region @websqlFunc
+    return async () => {
+      return 123.456;
+    };
+    //#endregion
+  }
+
+  @GET()
+  [TestbenchTest.getZero](): Taon.Response<number> {
+    //#region @websqlFunc
+    return async () => {
+      return 0;
+    };
+    //#endregion
+  }
+
+  @GET()
+  [TestbenchTest.getString](): Taon.Response<string> {
+    //#region @websqlFunc
+    return async () => {
+      return 'hello from Taon backend';
+    };
+    //#endregion
+  }
+
+  @GET()
+  [TestbenchTest.getEmptyString](): Taon.Response<string> {
+    //#region @websqlFunc
+    return async () => {
+      return '';
+    };
+    //#endregion
+  }
+
+  @GET()
+  [TestbenchTest.getNull](): Taon.Response<null> {
+    //#region @websqlFunc
+    return async () => {
+      return null;
+    };
+    //#endregion
+  }
+
+  @GET()
+  [TestbenchTest.getStringArray](): Taon.Response<string[]> {
+    //#region @websqlFunc
+    return async () => {
+      return ['one', 'two', 'three'];
+    };
+    //#endregion
+  }
+
+  @GET()
+  [TestbenchTest.getNumberArray](): Taon.Response<number[]> {
+    //#region @websqlFunc
+    return async () => {
+      return [10, 20, 30];
+    };
+    //#endregion
+  }
+
+  @GET()
+  [TestbenchTest.getObject](): Taon.Response<{
+    name: string;
+    enabled: boolean;
+    count: number;
+  }> {
+    //#region @websqlFunc
+    return async () => {
+      return {
+        name: 'test-object',
+        enabled: true,
+        count: 123,
+      };
+    };
+    //#endregion
+  }
+
+  @GET()
+  [TestbenchTest.getMappedObject](): Taon.Response<TestBenchPerson> {
+    //#region @websqlFunc
+    return async () => {
+      const person = new TestBenchPerson();
+
+      person.name = 'Darek';
+      person.age = 40;
+
+      return person;
+    };
+    //#endregion
+  }
+
+  /**
+   * Same backend value as getMappedObject.
+   *
+   * Separate endpoint/test name exists so every test has a unique
+   * TestbenchTest enum value.
+   */
+  @GET()
+  [TestbenchTest.getMappedObjectRawJson](): Taon.Response<TestBenchPerson> {
+    //#region @websqlFunc
+    return async () => {
+      const person = new TestBenchPerson();
+
+      person.name = 'Darek';
+      person.age = 40;
+
+      return person;
+    };
+    //#endregion
+  }
+
+  @GET()
+  [TestbenchTest.getMappedObjectArray](): Taon.Response<TestBenchPerson[]> {
+    //#region @websqlFunc
+    return async () => {
+      const john = new TestBenchPerson();
+      john.name = 'John';
+      john.age = 30;
+
+      const alice = new TestBenchPerson();
+      alice.name = 'Alice';
+      alice.age = 25;
+
+      return [john, alice];
+    };
+    //#endregion
+  }
+
+  /**
+   * Same backend value as getMappedObjectArray.
+   *
+   * Separate endpoint/test name exists so every test has a unique
+   * TestbenchTest enum value.
+   */
+  @GET()
+  [TestbenchTest.getMappedObjectArrayRawJson](): Taon.Response<
+    TestBenchPerson[]
+  > {
+    //#region @websqlFunc
+    return async () => {
+      const john = new TestBenchPerson();
+      john.name = 'John';
+      john.age = 30;
+
+      const alice = new TestBenchPerson();
+      alice.name = 'Alice';
+      alice.age = 25;
+
+      return [john, alice];
+    };
+    //#endregion
+  }
+
+  @GET()
+  [TestbenchTest.getMixedObject](): Taon.Response<any> {
+    //#region @websqlFunc
+    return async () => {
+      return {
+        boolean: true,
+        number: 123,
+        string: 'hello',
+        array: ['a', 'b', 'c'],
+        nested: {
+          foo: 'bar',
+        },
+      };
+    };
+    //#endregion
+  }
+
+  @GET()
+  [TestbenchTest.throwError](): Taon.Response<any> {
+    //#region @websqlFunc
+    return async () => {
+      throw new Error('Intentional TestBench backend error');
+    };
+    //#endregion
+  }
+}
+
+//#endregion
+
+//#region testbench api service
 
 //#region @browser
+
 @Injectable({
   providedIn: 'root',
 })
-export class UserApiService extends TaonBaseAngularService {
-  userController = this.injectController(UserController);
-
-  getAll(): Observable<User[]> {
-    return this.userController
-      .getAll()
-      .request()
-      .observable.pipe(map(r => r.body.json));
-  }
+export class TestBenchApiService extends TaonBaseAngularService {
+  testBenchController = this.injectController(TestBenchController);
 }
-//#endregion
 
 //#endregion
 
-//#region  testbench routes
+//#endregion
+
+//#region testbench app
+
 //#region @browser
+
+@Component({
+  selector: 'app-root',
+
+  imports: [MatButtonModule],
+
+  template: `
+    <main
+      style="
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 24px;
+        font-family: sans-serif;
+      ">
+      <h1>Taon TestBench</h1>
+
+      <button
+        mat-flat-button
+        color="primary"
+        [disabled]="runningAll()"
+        (click)="startTests()">
+        {{ runningAll() ? 'Running tests...' : 'Start all tests' }}
+      </button>
+
+      <h2 style="margin-top: 32px">Tests</h2>
+
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        ">
+        @for (item of tests(); track item.test) {
+          <div
+            style="
+              display: flex;
+              align-items: flex-start;
+              gap: 12px;
+            ">
+            <div
+              style="
+                width: 28px;
+                padding-top: 8px;
+                flex-shrink: 0;
+              ">
+              @switch (item.status) {
+                @case ('pending') {
+                  ⏳
+                }
+
+                @case ('running') {
+                  🔄
+                }
+
+                @case ('success') {
+                  ✅️
+                }
+
+                @case ('failed') {
+                  ⛔️
+                }
+              }
+            </div>
+
+            <div
+              style="
+                flex: 1;
+                min-width: 0;
+                padding-top: 8px;
+              ">
+              {{ testDisplayName(item.test) }}
+
+              @if (item.error) {
+                <pre
+                  style="
+                    margin: 8px 0 0;
+                    white-space: pre-wrap;
+                    overflow-wrap: anywhere;
+                    color: #c62828;
+                  "
+                  >{{ item.error }}</pre
+                >
+              }
+            </div>
+
+            <button
+              mat-button
+              [disabled]="item.status === 'running'"
+              (click)="runTest(item.test)">
+              Run
+            </button>
+          </div>
+        }
+      </div>
+    </main>
+  `,
+})
+export class TestbenchApp implements OnInit {
+  private readonly testBenchApiService = inject(TestBenchApiService);
+
+  readonly runningAll = signal(false);
+
+  readonly tests = signal<TestBenchTestItem[]>([]);
+
+  ngOnInit(): void {
+    void Taon.removeLoader(1000);
+
+    this.resetTests();
+  }
+
+  //#region tests initialization
+
+  private resetTests(): void {
+    this.tests.set(
+      Object.values(TestbenchTest).map(test => ({
+        test,
+        status: 'pending' as const,
+      })),
+    );
+  }
+
+  //#endregion
+
+  //#region display
+
+  testDisplayName(test: TestbenchTest): string {
+    return `Requesting ${_.startCase(test)} (${test})`;
+  }
+
+  //#endregion
+
+  //#region run tests
+
+  async startTests(): Promise<void> {
+    if (this.runningAll()) {
+      return;
+    }
+
+    this.runningAll.set(true);
+    this.resetTests();
+
+    try {
+      for (const test of Object.values(TestbenchTest)) {
+        await this.runTest(test);
+      }
+    } finally {
+      this.runningAll.set(false);
+    }
+  }
+
+  async runTest(test: TestbenchTest): Promise<void> {
+    this.patchTest(test, {
+      status: 'running',
+      error: undefined,
+    });
+
+    try {
+      await this[test]();
+
+      this.patchTest(test, {
+        status: 'success',
+        error: undefined,
+      });
+    } catch (error) {
+      console.error(`[Taon TestBench] "${test}" failed`, error);
+
+      this.patchTest(test, {
+        status: 'failed',
+        error:
+          error instanceof Error ? error.stack || error.message : String(error),
+      });
+    }
+  }
+
+  //#endregion
+
+  //#region test implementations
+
+  async [TestbenchTest.getBoolean](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.getBoolean
+      ]().request!();
+
+    this.assertEqual(data.body.booleanValue, true);
+  }
+
+  async [TestbenchTest.getNumber](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.getNumber
+      ]().request!();
+
+    this.assertEqual(data.body.numericValue, 123.456);
+  }
+
+  async [TestbenchTest.getZero](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.getZero
+      ]().request!();
+
+    this.assertEqual(data.body.numericValue, 0);
+  }
+
+  async [TestbenchTest.getString](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.getString
+      ]().request!();
+
+    this.assertEqual(data.body.text, 'hello from Taon backend');
+  }
+
+  async [TestbenchTest.getEmptyString](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.getEmptyString
+      ]().request!();
+
+    this.assertEqual(data.body.text, '');
+  }
+
+  async [TestbenchTest.getNull](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.getNull
+      ]().request!();
+
+    this.assertEqual(data.body.json, null);
+  }
+
+  async [TestbenchTest.getStringArray](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.getStringArray
+      ]().request!();
+
+    const value = data.body.json;
+
+    this.assert(Array.isArray(value), 'Expected value to be an array');
+
+    this.assertEqual(value.length, 3);
+    this.assertEqual(value[0], 'one');
+    this.assertEqual(value[1], 'two');
+    this.assertEqual(value[2], 'three');
+  }
+
+  async [TestbenchTest.getNumberArray](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.getNumberArray
+      ]().request!();
+
+    const value = data.body.json;
+
+    this.assert(Array.isArray(value), 'Expected value to be an array');
+
+    this.assertEqual(value.length, 3);
+    this.assertEqual(value[0], 10);
+    this.assertEqual(value[1], 20);
+    this.assertEqual(value[2], 30);
+  }
+
+  async [TestbenchTest.getObject](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.getObject
+      ]().request!();
+
+    const value = data.body.json;
+
+    this.assertEqual(value.name, 'test-object');
+    this.assertEqual(value.enabled, true);
+    this.assertEqual(value.count, 123);
+  }
+
+  async [TestbenchTest.getMappedObject](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.getMappedObject
+      ]().request!();
+
+    const value = data.body.json;
+
+    this.assert(
+      value instanceof TestBenchPerson,
+      'Expected body.json to be instance of TestBenchPerson',
+    );
+
+    this.assertEqual(value.name, 'Darek');
+    this.assertEqual(value.age, 40);
+
+    // Proves prototype/getters survived Taon mapping.
+    this.assertEqual(value.description, 'Darek (40)');
+  }
+
+  async [TestbenchTest.getMappedObjectRawJson](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.getMappedObjectRawJson
+      ]().request!();
+
+    const value = data.body.rawJson;
+
+    this.assert(
+      !(value instanceof TestBenchPerson),
+      'Expected body.rawJson NOT to be TestBenchPerson instance',
+    );
+
+    this.assertEqual((value as any).name, 'Darek');
+
+    this.assertEqual((value as any).age, 40);
+  }
+
+  async [TestbenchTest.getMappedObjectArray](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.getMappedObjectArray
+      ]().request!();
+
+    const value = data.body.json;
+
+    this.assert(Array.isArray(value), 'Expected value to be an array');
+
+    this.assertEqual(value.length, 2);
+
+    this.assert(
+      value[0] instanceof TestBenchPerson,
+      'Expected first value to be TestBenchPerson',
+    );
+
+    this.assert(
+      value[1] instanceof TestBenchPerson,
+      'Expected second value to be TestBenchPerson',
+    );
+
+    this.assertEqual(value[0].description, 'John (30)');
+
+    this.assertEqual(value[1].description, 'Alice (25)');
+  }
+
+  async [TestbenchTest.getMappedObjectArrayRawJson](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.getMappedObjectArrayRawJson
+      ]().request!();
+
+    const value = data.body.rawJson;
+
+    this.assert(Array.isArray(value), 'Expected rawJson value to be an array');
+
+    this.assert(
+      !(value[0] instanceof TestBenchPerson),
+      'Expected rawJson value NOT to be TestBenchPerson',
+    );
+
+    this.assertEqual((value[0] as any).name, 'John');
+
+    this.assertEqual((value[1] as any).name, 'Alice');
+  }
+
+  async [TestbenchTest.getMixedObject](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.getMixedObject
+      ]().request!();
+
+    const value = data.body.json;
+
+    this.assertEqual(value.boolean, true);
+    this.assertEqual(value.number, 123);
+    this.assertEqual(value.string, 'hello');
+
+    this.assert(Array.isArray(value.array), 'Expected nested array');
+
+    this.assertEqual(value.nested.foo, 'bar');
+  }
+
+  async [TestbenchTest.throwError](): Promise<void> {
+    let errorWasThrown = false;
+
+    try {
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.throwError
+      ]().request!();
+    } catch {
+      errorWasThrown = true;
+    }
+
+    this.assert(errorWasThrown, 'Expected backend request to throw');
+  }
+
+  //#endregion
+
+  //#region test helpers
+
+  private patchTest(
+    test: TestbenchTest,
+    patch: Partial<TestBenchTestItem>,
+  ): void {
+    this.tests.update(tests =>
+      tests.map(item =>
+        item.test === test
+          ? {
+              ...item,
+              ...patch,
+            }
+          : item,
+      ),
+    );
+  }
+
+  private assert(
+    condition: unknown,
+    message = 'Assertion failed',
+  ): asserts condition {
+    if (!condition) {
+      throw new Error(message);
+    }
+  }
+
+  private assertEqual<T>(actual: T, expected: T): void {
+    if (actual !== expected) {
+      throw new Error(
+        `Expected ${JSON.stringify(expected)}, ` +
+          `received ${JSON.stringify(actual)}`,
+      );
+    }
+  }
+
+  //#endregion
+}
+
+//#endregion
+
+//#endregion
+
+//#region testbench routes
+
+//#region @browser
+
 export const TestbenchServerRoutes: ServerRoute[] = [
   {
     path: '**',
     renderMode: RenderMode.Prerender,
   },
 ];
+
 export const TestbenchClientRoutes: Routes = [
   {
     path: '',
@@ -364,51 +787,58 @@ export const TestbenchClientRoutes: Routes = [
       if (TestbenchClientRoutes.length === 1) {
         return '';
       }
+
       return TestbenchClientRoutes.find(r => r.path !== '')!.path!;
     },
   },
+
   // PUT ALL ROUTES HERE
   // @placeholder-for-routes
-
-  // uncomment this to have NOT FOUND route
-  // {
-  //   path: '**',
-  //   component: TaonNotFoundComponent,
-  // },
 ];
-//#endregion
+
 //#endregion
 
-//#region  testbench app configs
+//#endregion
+
+//#region testbench app configs
+
 //#region @browser
+
 export const TestbenchAppConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
+
     {
       provide: TAON_CONTEXT,
       useFactory: () => TestbenchContext,
     },
+
     providePrimeNG({
       theme: {
         preset: Aura,
       },
     }),
+
     {
       provide: APP_INITIALIZER,
       multi: true,
       useFactory: () => TestbenchStartFunction,
     },
+
     provideBrowserGlobalErrorListeners(),
-    // remove withHashLocation() to use SSR
+
     provideRouter(
       TestbenchClientRoutes,
       withHashLocation(),
       withComponentInputBinding(),
     ),
+
     provideClientHydration(withEventReplay()),
+
     provideServiceWorker('ngsw-worker.js', {
       enabled:
         !isDevMode() && !ENV_ANGULAR_NODE_APP_BUILD_PWA_DISABLE_SERVICE_WORKER,
+
       registrationStrategy: 'registerWhenStable:30000',
     }),
   ],
@@ -422,152 +852,57 @@ export const TestbenchConfig = mergeApplicationConfig(
   TestbenchAppConfig,
   TestbenchServerConfig,
 );
-//#endregion
-//#endregion
 
-//#region  testbench entity
-@TaonEntity({ className: 'User' })
-class User extends TaonBaseAbstractEntity {
-  //#region @websql
-  @StringColumn()
-  //#endregion
-  name?: string;
-
-  getHello(): string {
-    return `hello ${this.name}`;
-  }
-}
-//#endregion
-
-//#region  testbench controller
-@TaonController({ className: 'UserController' })
-class UserController extends TaonBaseCrudController<User> {
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  entityClassResolveFn = () => User;
-
-  @GET()
-  helloWorld(): Taon.Response<string> {
-    //#region @websqlFunc
-    return async (req, res) => 'hello world';
-    //#endregion
-  }
-
-  @GET()
-  getOsPlatform(): Taon.Response<string> {
-    //#region @websqlFunc
-    return async (req, res) => {
-      //#region @backend
-      return os.platform(); // for normal nodejs backend return real value
-      //#endregion
-
-      return 'no-platform-inside-browser-and-websql-mode';
-    };
-    //#endregion
-  }
-}
-//#endregion
-
-//#region  testbench migration
-
-//#region @websql
-@TaonMigration({
-  className: 'UserMigration',
-})
-class UserMigration extends TaonBaseMigration {
-  userController = this.injectRepo(User);
-
-  async up(): Promise<any> {
-    const superAdmin = new User();
-    superAdmin.name = 'super-admin';
-    await this.userController.save(superAdmin);
-  }
-}
 //#endregion
 
 //#endregion
 
-//#region  testbench context
+//#region testbench context
+
 var TestbenchContext = Taon.createContext(() => ({
   ...HOST_CONFIG['TestbenchContext'],
-  contexts: { TaonBaseContext },
 
-  //#region @websql
-  /**
-   * In production use specyfic for this context name
-   * generated migration object from  ./migrations/index.ts.
-   */
-  migrations: {
-    UserMigration,
+  contexts: {
+    TaonBaseContext,
   },
-  //#endregion
 
   controllers: {
-    UserController,
+    TestBenchController,
   },
+
   entities: {
-    User,
+    TestBenchPerson,
   },
+
   database: true,
-  disabledRealtime: true,
+
+  disabledRealtime: false,
 }));
+
 //#endregion
 
-//#region  testbench start function
+//#region testbench start function
+
 export const TestbenchStartFunction = async (
   startParams?: Taon.StartParams,
 ): Promise<void> => {
   TranslationManager.Instance.visibleLanguages = ['en-US', 'pl-PL'];
-  // await TranslationManager.Instance.changeGlobalLang('en-US');
-
-  // await TranslationManager.Instance.setOneLanguagePernament('en-US')
 
   //#region @browser
+
   TaonAdmin.init();
+
   await TaonStor.awaitAll();
+
   //#endregion
 
   await TestbenchContext.initialize(startParams);
-
-  //#region initialize auto generated active contexts
-  const autoGeneratedActiveContextsForApp: TaonContext[] = [
-    // @placeholder-for-contexts-init
-  ];
-
-  const priorityContexts = [
-    // put here manual priority for contexts if needed
-  ];
-
-  const activeContextsForApp: TaonContext[] = [
-    ...priorityContexts,
-    ...autoGeneratedActiveContextsForApp.filter(
-      c => !priorityContexts.includes(c),
-    ),
-  ];
-
-  for (const activeContext of activeContextsForApp) {
-    await activeContext.initialize(startParams);
-  }
-  //#endregion
-
-  //#region @backend
-  //#region @esmRemove
-  if (
-    startParams?.onlyMigrationRun ||
-    startParams?.onlyMigrationRevertToTimestamp
-  ) {
-    process.exit(0);
-  }
-  //#endregion
-  //#endregion
-
-  //#region @backend
-  //#region @esmRemove
-  console.log(`Hello in NodeJs backend! os=${os.platform()}`);
-  //#endregion
-  //#endregion
 };
+
 //#endregion
 
 //#region default export
+
 export default TestbenchStartFunction;
+
 //#endregion
