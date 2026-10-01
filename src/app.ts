@@ -1,7 +1,5 @@
 //#region imports
 
-import * as os from 'os'; // @backend
-
 import {
   APP_INITIALIZER,
   ApplicationConfig,
@@ -33,7 +31,10 @@ import Aura from '@primeng/themes/aura'; // @browser
 import { Translation, TranslationManager } from '@taon-dev/i18n/src';
 import { providePrimeNG } from 'primeng/config'; // @browser
 import {
+  Body,
   GET,
+  POST,
+  Query,
   TAON_CONTEXT,
   Taon,
   TaonBaseAbstractEntity,
@@ -67,6 +68,8 @@ const t = Translation.for(Taon.__FILE_RELATIVE_PATH, Taon.LANG_IMPORT_MAP, {
 //#region testbench tests
 
 export enum TestbenchTest {
+  //#region backend -> frontend
+
   getBoolean = 'getBoolean',
   getNumber = 'getNumber',
   getZero = 'getZero',
@@ -82,6 +85,37 @@ export enum TestbenchTest {
   getMappedObjectArrayRawJson = 'getMappedObjectArrayRawJson',
   getMixedObject = 'getMixedObject',
   throwError = 'throwError',
+
+  //#endregion
+
+  //#region frontend -> backend / body
+  bodyMappedUserWithCircuralFromClient = 'bodyMappedUserWithCircuralFromClient',
+
+  bodyMappedUserWithCircuralFromServer = 'bodyMappedUserWithCircuralFromServer',
+
+  bodyMappedUser = 'bodyMappedUser',
+  bodyNestedMappedEntities = 'bodyNestedMappedEntities',
+  bodyNumber = 'bodyNumber',
+  bodyBoolean = 'bodyBoolean',
+  bodyString = 'bodyString',
+
+  //#endregion
+
+  //#region frontend -> backend / query
+
+  queryNumber = 'queryNumber',
+  queryBoolean = 'queryBoolean',
+  queryString = 'queryString',
+
+  queryMappedUser = 'queryMappedUser',
+
+  queryNestedMappedEntities = 'queryNestedMappedEntities',
+
+  queryMappedUserWithCircuralFromClient = 'queryMappedUserWithCircuralFromClient',
+
+  // queryMappedUserWithCircuralFromServer = 'queryMappedUserWithCircuralFromServer',
+
+  //#endregion
 }
 
 type TestBenchTestStatus = 'pending' | 'running' | 'success' | 'failed';
@@ -105,8 +139,44 @@ export class TestBenchPerson extends TaonBaseAbstractEntity {
 
   age!: number;
 
+  declare friend: TestBenchPerson;
+
   get description(): string {
     return `${this.name} (${this.age})`;
+  }
+}
+
+@TaonEntity({
+  className: 'TestBenchPersonCirc',
+  createTable: true,
+  // defaultModelMapping: () => ({
+  //   '': TestBenchPersonCirc,
+  //   friend: TestBenchPersonCirc,
+  // }),
+})
+export class TestBenchPersonCirc extends TaonBaseAbstractEntity {
+  name!: string;
+
+  age!: number;
+
+  declare friend: TestBenchPerson;
+
+  get description(): string {
+    return `${this.name} (${this.age})`;
+  }
+}
+
+@TaonEntity({
+  className: 'TestBenchBook',
+  createTable: true,
+})
+export class TestBenchBook extends TaonBaseAbstractEntity {
+  title!: string;
+
+  pages!: number;
+
+  get description(): string {
+    return `${this.title} (${this.pages} pages)`;
   }
 }
 
@@ -118,6 +188,8 @@ export class TestBenchPerson extends TaonBaseAbstractEntity {
   className: 'TestBenchController',
 })
 export class TestBenchController extends TaonBaseController {
+  //#region backend -> frontend
+
   @GET()
   [TestbenchTest.getBoolean](): Taon.Response<boolean> {
     //#region @websqlFunc
@@ -221,12 +293,6 @@ export class TestBenchController extends TaonBaseController {
     //#endregion
   }
 
-  /**
-   * Same backend value as getMappedObject.
-   *
-   * Separate endpoint/test name exists so every test has a unique
-   * TestbenchTest enum value.
-   */
   @GET()
   [TestbenchTest.getMappedObjectRawJson](): Taon.Response<TestBenchPerson> {
     //#region @websqlFunc
@@ -264,6 +330,7 @@ export class TestBenchController extends TaonBaseController {
    * Separate endpoint/test name exists so every test has a unique
    * TestbenchTest enum value.
    */
+
   @GET()
   [TestbenchTest.getMappedObjectArrayRawJson](): Taon.Response<
     TestBenchPerson[]
@@ -308,6 +375,449 @@ export class TestBenchController extends TaonBaseController {
     };
     //#endregion
   }
+
+  //#endregion
+
+  //#region frontend -> backend / body
+
+  @POST()
+  [TestbenchTest.bodyMappedUser](
+    @Body() user: TestBenchPerson,
+  ): Taon.Response<boolean> {
+    //#region @websqlFunc
+    return async () => {
+      try {
+        if (!(user instanceof TestBenchPerson)) {
+          return false;
+        }
+
+        if (user.name !== 'Darek') {
+          return false;
+        }
+
+        if (user.age !== 40) {
+          return false;
+        }
+
+        if (user.description !== 'Darek (40)') {
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.error(error);
+
+        return false;
+      }
+    };
+    //#endregion
+  }
+
+  @POST()
+  [TestbenchTest.bodyMappedUserWithCircuralFromServer](): Taon.Response<TestBenchPerson> {
+    //#region @websqlFunc
+    return async () => {
+      const user = new TestBenchPerson();
+      const friend = new TestBenchPerson();
+      friend.name = 'Franek';
+      friend.age = 30;
+      user.friend = friend;
+      user.name = 'Darek';
+      user.age = 40;
+      friend.friend = user;
+      return () => user;
+    };
+    //#endregion
+  }
+
+  @POST()
+  [TestbenchTest.bodyMappedUserWithCircuralFromClient](
+    @Body(void 0, {
+      circ: true,
+    })
+    user: TestBenchPerson,
+  ): Taon.Response<boolean> {
+    //#region @websqlFunc
+    return async () => {
+      try {
+        if (!(user instanceof TestBenchPersonCirc)) {
+          return false;
+        }
+
+        if (!(user.friend instanceof TestBenchPersonCirc)) {
+          return false;
+        }
+
+        if (!(user.friend.friend instanceof TestBenchPersonCirc)) {
+          return false;
+        }
+
+        if (!(user.friend.friend.friend instanceof TestBenchPersonCirc)) {
+          return false;
+        }
+
+        if (user.name !== 'Darek') {
+          return false;
+        }
+
+        if (user.friend.name !== 'Franek') {
+          return false;
+        }
+
+        if (user.age !== 40) {
+          return false;
+        }
+
+        if (user.description !== 'Darek (40)') {
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.error(error);
+
+        return false;
+      }
+    };
+    //#endregion
+  }
+
+  @POST()
+  [TestbenchTest.queryMappedUserWithCircuralFromClient](
+    @Query(void 0, {
+      circ: true,
+    })
+    user: TestBenchPerson,
+  ): Taon.Response<boolean> {
+    //#region @websqlFunc
+    return async () => {
+      try {
+        if (!(user instanceof TestBenchPersonCirc)) {
+          return false;
+        }
+
+        if (!(user.friend instanceof TestBenchPersonCirc)) {
+          return false;
+        }
+
+        if (!(user.friend.friend instanceof TestBenchPersonCirc)) {
+          return false;
+        }
+
+        if (!(user.friend.friend.friend instanceof TestBenchPersonCirc)) {
+          return false;
+        }
+
+        if (user.name !== 'Darek') {
+          return false;
+        }
+
+        if (user.age !== 40) {
+          return false;
+        }
+
+        if (user.description !== 'Darek (40)') {
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.error(error);
+
+        return false;
+      }
+    };
+    //#endregion
+  }
+
+  @POST()
+  [TestbenchTest.queryMappedUser](
+    @Query() user: TestBenchPerson,
+  ): Taon.Response<boolean> {
+    //#region @websqlFunc
+    return async () => {
+      try {
+        if (!(user instanceof TestBenchPerson)) {
+          return false;
+        }
+
+        if (user.name !== 'Darek') {
+          return false;
+        }
+
+        if (user.age !== 40) {
+          return false;
+        }
+
+        if (user.description !== 'Darek (40)') {
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.error(error);
+
+        return false;
+      }
+    };
+    //#endregion
+  }
+
+  @POST()
+  [TestbenchTest.bodyNestedMappedEntities](
+    @Body('nestedBook') book: TestBenchBook,
+    @Body('nestedUser') user: TestBenchPerson,
+  ): Taon.Response<boolean> {
+    //#region @websqlFunc
+    return async () => {
+      try {
+        if (!(book instanceof TestBenchBook)) {
+          return false;
+        }
+
+        if (!(user instanceof TestBenchPerson)) {
+          return false;
+        }
+
+        if (book.title !== 'Taon Book') {
+          return false;
+        }
+
+        if (book.pages !== 123) {
+          return false;
+        }
+
+        if (book.description !== 'Taon Book (123 pages)') {
+          return false;
+        }
+
+        if (user.name !== 'Darek') {
+          return false;
+        }
+
+        if (user.age !== 40) {
+          return false;
+        }
+
+        if (user.description !== 'Darek (40)') {
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.error(error);
+
+        return false;
+      }
+    };
+    //#endregion
+  }
+
+  @POST()
+  [TestbenchTest.queryNestedMappedEntities](
+    @Query('nestedBook') book: TestBenchBook,
+    @Query('nestedUser') user: TestBenchPerson,
+  ): Taon.Response<boolean> {
+    //#region @websqlFunc
+    return async () => {
+      try {
+        if (!(book instanceof TestBenchBook)) {
+          return false;
+        }
+
+        if (!(user instanceof TestBenchPerson)) {
+          return false;
+        }
+
+        if (book.title !== 'Taon Book') {
+          return false;
+        }
+
+        if (book.pages !== 123) {
+          return false;
+        }
+
+        if (book.description !== 'Taon Book (123 pages)') {
+          return false;
+        }
+
+        if (user.name !== 'Darek') {
+          return false;
+        }
+
+        if (user.age !== 40) {
+          return false;
+        }
+
+        if (user.description !== 'Darek (40)') {
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.error(error);
+
+        return false;
+      }
+    };
+    //#endregion
+  }
+
+  @POST()
+  [TestbenchTest.bodyNumber](
+    @Body('numberFromFE') numberFromFE: number,
+  ): Taon.Response<boolean> {
+    //#region @websqlFunc
+    return async () => {
+      try {
+        if (typeof numberFromFE !== 'number') {
+          return false;
+        }
+
+        if (numberFromFE !== 123.456) {
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.error(error);
+
+        return false;
+      }
+    };
+    //#endregion
+  }
+
+  @POST()
+  [TestbenchTest.bodyBoolean](
+    @Body('boolFromFE') boolFromFE: boolean,
+  ): Taon.Response<boolean> {
+    //#region @websqlFunc
+    return async () => {
+      try {
+        if (typeof boolFromFE !== 'boolean') {
+          return false;
+        }
+
+        if (boolFromFE !== true) {
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.error(error);
+
+        return false;
+      }
+    };
+    //#endregion
+  }
+
+  @POST()
+  [TestbenchTest.bodyString](
+    @Body('stringFromFE') stringFromFE: string,
+  ): Taon.Response<boolean> {
+    //#region @websqlFunc
+    return async () => {
+      try {
+        if (typeof stringFromFE !== 'string') {
+          return false;
+        }
+
+        if (stringFromFE !== 'hello from frontend') {
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.error(error);
+
+        return false;
+      }
+    };
+    //#endregion
+  }
+
+  //#endregion
+
+  //#region frontend -> backend / query
+
+  @GET()
+  [TestbenchTest.queryNumber](
+    @Query('numberFromFE') numberFromFE: number,
+  ): Taon.Response<boolean> {
+    //#region @websqlFunc
+    return async () => {
+      try {
+        if (typeof numberFromFE !== 'number') {
+          return false;
+        }
+
+        if (numberFromFE !== 123.456) {
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.error(error);
+
+        return false;
+      }
+    };
+    //#endregion
+  }
+
+  @GET()
+  [TestbenchTest.queryBoolean](
+    @Query('boolFromFE') boolFromFE: boolean,
+  ): Taon.Response<boolean> {
+    //#region @websqlFunc
+    return async () => {
+      try {
+        if (typeof boolFromFE !== 'boolean') {
+          return false;
+        }
+
+        if (boolFromFE !== true) {
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.error(error);
+
+        return false;
+      }
+    };
+    //#endregion
+  }
+
+  @GET()
+  [TestbenchTest.queryString](
+    @Query('stringFromFE') stringFromFE: string,
+  ): Taon.Response<boolean> {
+    //#region @websqlFunc
+    return async () => {
+      try {
+        if (typeof stringFromFE !== 'string') {
+          return false;
+        }
+
+        if (stringFromFE !== 'hello from frontend') {
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.error(error);
+
+        return false;
+      }
+    };
+    //#endregion
+  }
+
+  //#endregion
 }
 
 //#endregion
@@ -506,7 +1016,7 @@ export class TestbenchApp implements OnInit {
 
   //#endregion
 
-  //#region test implementations
+  //#region test implementations / backend -> frontend
 
   async [TestbenchTest.getBoolean](): Promise<void> {
     const data =
@@ -623,7 +1133,6 @@ export class TestbenchApp implements OnInit {
     this.assertEqual(value.name, 'Darek');
     this.assertEqual(value.age, 40);
 
-    // Proves prototype/getters survived Taon mapping.
     this.assertEqual(value.description, 'Darek (40)');
   }
 
@@ -721,6 +1230,188 @@ export class TestbenchApp implements OnInit {
     }
 
     this.assert(errorWasThrown, 'Expected backend request to throw');
+  }
+
+  //#endregion
+
+  //#region test implementations / frontend -> backend / body
+
+  async [TestbenchTest.bodyMappedUser](): Promise<void> {
+    const user = new TestBenchPerson();
+
+    user.name = 'Darek';
+    user.age = 40;
+
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.bodyMappedUser
+      ](user).request!();
+
+    this.assertEqual(data.body.booleanValue, true);
+  }
+
+  async [TestbenchTest.bodyMappedUserWithCircuralFromClient](): Promise<void> {
+    const user = new TestBenchPersonCirc();
+    const friend = new TestBenchPersonCirc();
+    friend.name = 'Franek';
+    friend.age = 30;
+    user.friend = friend;
+    user.name = 'Darek';
+    user.age = 40;
+    friend.friend = user;
+
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.bodyMappedUserWithCircuralFromClient
+      ](user).request!();
+
+    this.assertEqual(data.body.booleanValue, true);
+  }
+
+  async [TestbenchTest.bodyMappedUserWithCircuralFromServer](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.bodyMappedUserWithCircuralFromServer
+      ]().request!();
+
+    const user = data.body.json;
+    // this.assertEqual(data.body.json, true);
+
+    this.assert(
+      user instanceof TestBenchPerson,
+      'Expected value to be TestBenchPerson',
+    );
+
+    this.assert(
+      user.friend instanceof TestBenchPerson,
+      'Expected friend value to be TestBenchPerson',
+    );
+
+    this.assert(
+      user.friend.friend instanceof TestBenchPerson,
+      'Expected friend.friend value to be TestBenchPerson',
+    );
+  }
+
+  async [TestbenchTest.queryMappedUserWithCircuralFromClient](): Promise<void> {
+    const user = new TestBenchPersonCirc();
+
+    user.name = 'Darek';
+    user.age = 40;
+    user.friend = user;
+
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.queryMappedUserWithCircuralFromClient
+      ](user).request!();
+
+    this.assertEqual(data.body.booleanValue, true);
+  }
+
+  async [TestbenchTest.queryMappedUser](): Promise<void> {
+    const user = new TestBenchPerson();
+
+    user.name = 'Darek';
+    user.age = 40;
+
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.queryMappedUser
+      ](user).request!();
+
+    this.assertEqual(data.body.booleanValue, true);
+  }
+
+  async [TestbenchTest.bodyNestedMappedEntities](): Promise<void> {
+    const book = new TestBenchBook();
+
+    book.title = 'Taon Book';
+    book.pages = 123;
+
+    const user = new TestBenchPerson();
+
+    user.name = 'Darek';
+    user.age = 40;
+
+    const data = await this.testBenchApiService.testBenchController[
+      TestbenchTest.bodyNestedMappedEntities
+    ](book, user).request!();
+
+    this.assertEqual(data.body.booleanValue, true);
+  }
+
+  async [TestbenchTest.queryNestedMappedEntities](): Promise<void> {
+    const book = new TestBenchBook();
+
+    book.title = 'Taon Book';
+    book.pages = 123;
+
+    const user = new TestBenchPerson();
+
+    user.name = 'Darek';
+    user.age = 40;
+
+    const data = await this.testBenchApiService.testBenchController[
+      TestbenchTest.queryNestedMappedEntities
+    ](book, user).request!();
+
+    this.assertEqual(data.body.booleanValue, true);
+  }
+
+  async [TestbenchTest.bodyNumber](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.bodyNumber
+      ](123.456).request!();
+
+    this.assertEqual(data.body.booleanValue, true);
+  }
+
+  async [TestbenchTest.bodyBoolean](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.bodyBoolean
+      ](true).request!();
+
+    this.assertEqual(data.body.booleanValue, true);
+  }
+
+  async [TestbenchTest.bodyString](): Promise<void> {
+    const data = await this.testBenchApiService.testBenchController[
+      TestbenchTest.bodyString
+    ]('hello from frontend').request!();
+
+    this.assertEqual(data.body.booleanValue, true);
+  }
+
+  //#endregion
+
+  //#region test implementations / frontend -> backend / query
+
+  async [TestbenchTest.queryNumber](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.queryNumber
+      ](123.456).request!();
+
+    this.assertEqual(data.body.booleanValue, true);
+  }
+
+  async [TestbenchTest.queryBoolean](): Promise<void> {
+    const data =
+      await this.testBenchApiService.testBenchController[
+        TestbenchTest.queryBoolean
+      ](true).request!();
+
+    this.assertEqual(data.body.booleanValue, true);
+  }
+
+  async [TestbenchTest.queryString](): Promise<void> {
+    const data = await this.testBenchApiService.testBenchController[
+      TestbenchTest.queryString
+    ]('hello from frontend').request!();
+
+    this.assertEqual(data.body.booleanValue, true);
   }
 
   //#endregion
@@ -872,6 +1563,8 @@ var TestbenchContext = Taon.createContext(() => ({
 
   entities: {
     TestBenchPerson,
+    TestBenchPersonCirc,
+    TestBenchBook,
   },
 
   database: true,
