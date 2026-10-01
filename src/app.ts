@@ -432,7 +432,7 @@ export class TestBenchController extends TaonBaseController {
 
   @POST()
   [TestbenchTest.bodyMappedUserWithCircuralFromClient](
-    @Body(void 0, {
+    @Body({
       circ: true,
     })
     user: TestBenchPerson,
@@ -484,7 +484,7 @@ export class TestBenchController extends TaonBaseController {
 
   @POST()
   [TestbenchTest.queryMappedUserWithCircuralFromClient](
-    @Query(void 0, {
+    @Query({
       circ: true,
     })
     user: TestBenchPerson,
