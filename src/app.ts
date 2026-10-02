@@ -149,6 +149,7 @@ export class TestBenchPerson extends TaonBaseAbstractEntity {
 @TaonEntity({
   className: 'TestBenchPersonCirc',
   createTable: true,
+  // TODO @LAST @UNCOMMENT - make it work!
   // defaultModelMapping: () => ({
   //   '': TestBenchPersonCirc,
   //   friend: TestBenchPersonCirc,

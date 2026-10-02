@@ -6,6 +6,7 @@
     "private": true,
     "scripts": {}
   },
+  "overrideNpmName": "@taon-dev/testbench",
   "version": "v21",
   "shouldGenerateAutogenIndexFile": true,
   "generateTranslationsFor": [
