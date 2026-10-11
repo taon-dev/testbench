@@ -428,7 +428,7 @@ export class TestBenchController extends TaonBaseController {
       user.name = 'Darek';
       user.age = 40;
       friend.friend = user;
-      return ({ circResponse}) => circResponse(user);
+      return ({ circResponse }) => circResponse(user);
     };
     //#endregion
   }
