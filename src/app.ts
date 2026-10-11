@@ -32,9 +32,11 @@ import { Translation, TranslationManager } from '@taon-dev/i18n/src';
 import { providePrimeNG } from 'primeng/config'; // @browser
 import {
   Body,
+  BodyCirc,
   GET,
   POST,
   Query,
+  QueryCirc,
   TAON_CONTEXT,
   Taon,
   TaonBaseAbstractEntity,
@@ -426,16 +428,14 @@ export class TestBenchController extends TaonBaseController {
       user.name = 'Darek';
       user.age = 40;
       friend.friend = user;
-      return () => user;
+      return ({ circResponse}) => circResponse(user);
     };
     //#endregion
   }
 
   @POST()
   [TestbenchTest.bodyMappedUserWithCircuralFromClient](
-    @Body({
-      circ: true,
-    })
+    @BodyCirc()
     user: TestBenchPerson,
   ): Taon.Response<boolean> {
     //#region @websqlFunc
@@ -485,9 +485,7 @@ export class TestBenchController extends TaonBaseController {
 
   @POST()
   [TestbenchTest.queryMappedUserWithCircuralFromClient](
-    @Query({
-      circ: true,
-    })
+    @QueryCirc()
     user: TestBenchPerson,
   ): Taon.Response<boolean> {
     //#region @websqlFunc
