@@ -3,7 +3,7 @@
   "packageJsonOverride": {
     "author": "Dfilipiak",
     "description": "Description for testbench. Hello world!",
-    "private": true,
+    "private": false,
     "scripts": {}
   },
   "overrideNpmName": "@taon-dev/testbench",
