@@ -6,4 +6,3 @@
 export * from './build-info._auto-generated_'; 
 export * from './my-organization-proj'; 
 export * from './start-cli'; 
-export * from './i18n/lib.translation'; 

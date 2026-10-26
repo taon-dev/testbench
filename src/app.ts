@@ -619,6 +619,7 @@ export class TestBenchController extends TaonBaseController {
   ): Taon.Response<boolean> {
     //#region @websqlFunc
     return async () => {
+      console.log({ book, user });
       try {
         if (!(book instanceof TestBenchBook)) {
           return false;
