@@ -34,6 +34,7 @@ import {
   Body,
   BodyCirc,
   GET,
+  Header,
   POST,
   Query,
   QueryCirc,
@@ -117,6 +118,8 @@ export enum TestbenchTest {
 
   // queryMappedUserWithCircuralFromServer = 'queryMappedUserWithCircuralFromServer',
 
+  shouldTranslateMessage = 'shouldTranslateMessage',
+
   //#endregion
 }
 
@@ -192,6 +195,8 @@ export class TestBenchBook extends TaonBaseAbstractEntity {
 })
 export class TestBenchController extends TaonBaseController {
   //#region backend -> frontend
+
+  t = t;
 
   @GET()
   [TestbenchTest.getBoolean](): Taon.Response<boolean> {
@@ -525,6 +530,15 @@ export class TestBenchController extends TaonBaseController {
 
         return false;
       }
+    };
+    //#endregion
+  }
+
+  @POST()
+  [TestbenchTest.shouldTranslateMessage](): Taon.Response<string> {
+    //#region @backendFunc
+    return async (req, res, { t }) => {
+      return t.gettext('Tank');
     };
     //#endregion
   }
@@ -938,6 +952,8 @@ export class TestBenchApiService extends TaonBaseAngularService {
   `,
 })
 export class TestbenchApp implements OnInit {
+  t = t.for(this);
+
   private readonly testBenchApiService = inject(TestBenchApiService);
 
   readonly runningAll = signal(false);
@@ -1306,6 +1322,38 @@ export class TestbenchApp implements OnInit {
       ](user).request!();
 
     this.assertEqual(data.body.booleanValue, true);
+  }
+
+  async [TestbenchTest.shouldTranslateMessage](): Promise<void> {
+    await (async () => {
+      await this.t.changeFileLang('en-US');
+      const data =
+        await this.testBenchApiService.testBenchController[
+          TestbenchTest.shouldTranslateMessage
+        ]().request!();
+
+      this.assertEqual(data.body.text, 'Tank');
+    })();
+
+    await (async () => {
+      await this.t.changeFileLang('pl-PL');
+      const data =
+        await this.testBenchApiService.testBenchController[
+          TestbenchTest.shouldTranslateMessage
+        ]().request!();
+
+      this.assertEqual(data.body.text, 'Czołg');
+    })();
+
+    await (async () => {
+      await this.t.changeFileLang('de-DE');
+      const data =
+        await this.testBenchApiService.testBenchController[
+          TestbenchTest.shouldTranslateMessage
+        ]().request!();
+
+      this.assertEqual(data.body.text, 'Panzer');
+    })();
   }
 
   async [TestbenchTest.queryMappedUser](): Promise<void> {

@@ -4,29 +4,26 @@
     "author": "Dfilipiak",
     "description": "Description for testbench. Hello world!",
     "private": false,
-    "scripts": {}
+    "scripts": {},
   },
   "overrideNpmName": "@taon-dev/testbench",
   "version": "v21",
   "shouldGenerateAutogenIndexFile": true,
-  "generateTranslationsFor": [
-    "en-US",
-    "pl-PL"
-  ],
+  "generateTranslationsFor": ["en-US", "pl-PL", "de-DE"],
   "shouldGenerateTranslationFiles": true,
   "shouldGenerateAutogenAppRoutesFile": true,
   "autoReleaseConfigAllowedItems": [
     {
       "artifactName": "npm-lib-and-cli-tool",
       "releaseType": "manual-taon",
-      "taskName": "npm"
+      "taskName": "npm",
     },
     {
       "artifactName": "angular-node-app",
       "askUserBeforeFinalAction": true,
       "envName": "static-pages",
       "releaseType": "manual-static-pages",
-      "taskName": "static-pages"
+      "taskName": "static-pages",
     },
     {
       "artifactName": "angular-node-app",
@@ -34,15 +31,15 @@
       "envName": "localhost",
       "releaseType": "manual-taon",
       "taonInstanceIp": "127.0.0.1",
-      "taskName": "localhost"
+      "taskName": "localhost",
     },
     {
       "artifactName": "angular-node-app",
       "askUserBeforeFinalAction": false,
       "envName": "cloudflare",
       "releaseType": "manual-cloudflare",
-      "taskName": "cloudflare"
-    }
+      "taskName": "cloudflare",
+    },
   ],
-  "appId": "com.domain.example.testbench"
+  "appId": "com.domain.example.testbench",
 }
