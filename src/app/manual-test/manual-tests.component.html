@@ -1,0 +1,16 @@
+<main class="manual-tests">
+  <h1>Manual Tests</h1>
+  <mat-accordion multi>
+    @for (test of tests; track test.id) {
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>{{ test.title }}</mat-panel-title>
+          <mat-panel-description>{{ test.description }}</mat-panel-description>
+        </mat-expansion-panel-header>
+        <ng-template matExpansionPanelContent>
+          <ng-container *ngComponentOutlet="test.component" />
+        </ng-template>
+      </mat-expansion-panel>
+    }
+  </mat-accordion>
+</main>

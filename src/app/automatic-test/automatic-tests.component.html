@@ -1,0 +1,52 @@
+<main class="automatic-tests">
+  <h1>Taon TestBench</h1>
+
+  <div class="summary" aria-live="polite">
+    <span>Total: {{ tests().length }}</span>
+    <span>Passed: {{ passed() }}</span>
+    <span>Failed: {{ failed() }}</span>
+    <span>Running: {{ running() }}</span>
+  </div>
+
+  <button
+    mat-flat-button
+    color="primary"
+    [disabled]="runningAll()"
+    (click)="startTests()">
+    {{ runningAll() ? 'Running tests...' : 'Start All Tests' }}
+  </button>
+
+  @for (group of groups(); track group[0]) {
+    <section class="test-group">
+      <h2>{{ group[0] }}</h2>
+      @for (test of group[1]; track test.id) {
+        <article class="test-case">
+          <div class="test-status" [attr.data-status]="test.status" aria-label="Status">
+            @switch (test.status) {
+              @case ('pending') { Pending }
+              @case ('running') { Running }
+              @case ('success') { Success }
+              @case ('failed') { Failed }
+            }
+          </div>
+          <div class="test-details">
+            <strong>{{ test.name }}</strong>
+            <p>{{ test.description }}</p>
+            @if (test.durationMs !== undefined) {
+              <small>Duration: {{ test.durationMs | number: '1.0-2' }} ms</small>
+            }
+            @if (test.error) {
+              <pre class="test-error">{{ test.error }}</pre>
+            }
+          </div>
+          <button
+            mat-button
+            [disabled]="test.status === 'running' || runningAll()"
+            (click)="runTest(test.id)">
+            Run
+          </button>
+        </article>
+      }
+    </section>
+  }
+</main>

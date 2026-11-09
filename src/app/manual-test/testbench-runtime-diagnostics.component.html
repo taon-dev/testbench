@@ -1,0 +1,15 @@
+<section aria-live="polite">
+  <h3>Runtime diagnostics</h3>
+  @if (diagnostics(); as value) {
+    <p>Backend runtime: {{ value.runtime }}</p>
+    <p>Storage available: {{ value.storageAvailable ? 'Yes' : 'No' }}</p>
+    <p>
+      Private asset signing configured:
+      {{ value.privateAssetSigningConfigured ? 'Yes' : 'No' }}
+    </p>
+  } @else if (error()) {
+    <pre class="error">{{ error() }}</pre>
+  } @else {
+    <p>Checking backend...</p>
+  }
+</section>

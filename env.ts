@@ -8,7 +8,7 @@ const env: Partial<EnvOptions> = {
   },
   loading: {
     preAngularBootstrap: {
-      background: '#fdebed',
+      background: 'lightgray',
       loader: { name: 'lds-default' },
     },
   },

@@ -4,6 +4,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/app.ts:541
+#: src/app/automatic-test/translations/testbench-translations.controller.ts:20
 msgid "Tank"
 msgstr "Panzer"

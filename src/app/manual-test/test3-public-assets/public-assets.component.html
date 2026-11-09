@@ -1,0 +1,275 @@
+<section class="manual-test">
+  <testbench-runtime-diagnostics />
+
+  <p class="description">
+    These test assets use a dedicated <strong>TestBench key prefix</strong>
+    and are requested without authentication.
+  </p>
+
+  <!-- NORMAL FILE -->
+  <section class="asset-section file-section">
+    <div class="section-header">
+      <span class="section-icon">📄</span>
+      <div>
+        <h3>Normal File</h3>
+        <p>Upload and download public files</p>
+      </div>
+    </div>
+
+    <div class="file-picker">
+      <label
+        for="public-file"
+        class="file-label">
+        <span class="file-label-title">Choose a file</span>
+        <span class="file-label-description">
+          Select any file to test public downloads
+        </span>
+      </label>
+
+      <input
+        id="public-file"
+        type="file"
+        [disabled]="uploading() !== null"
+        (change)="selectFile('file', $event)" />
+    </div>
+
+    <div class="actions">
+      <button
+        mat-flat-button
+        class="upload-button"
+        [disabled]="!selected().file || uploading() !== null"
+        (click)="upload('file')">
+        {{ uploading() === 'file' ? 'Uploading...' : 'Upload File' }}
+      </button>
+    </div>
+
+    @if (assets().file; as asset) {
+      <div class="result-card">
+        <div class="result-header">
+          <strong>Uploaded File</strong>
+          <span
+            class="http-badge"
+            [class.http-error]="asset.status < 200 || asset.status >= 300">
+            HTTP {{ asset.status }}
+          </span>
+        </div>
+
+        <dl>
+          <dt>Filename</dt>
+          <dd>{{ asset.object.fileName }}</dd>
+
+          <dt>Size</dt>
+          <dd>{{ asset.object.size | number }} bytes</dd>
+
+          <dt>MIME type</dt>
+          <dd>{{ asset.object.contentType || 'MIME type unavailable' }}</dd>
+        </dl>
+
+        <div class="result-actions">
+          <a
+            class="download-button"
+            [href]="asset.url"
+            target="_blank"
+            rel="noopener">
+            Download
+          </a>
+
+          <a
+            class="secondary-link"
+            [href]="asset.url"
+            target="_blank"
+            rel="noopener">
+            Open in New Tab
+          </a>
+        </div>
+
+        <p class="asset-url break-word">{{ asset.url }}</p>
+      </div>
+    }
+  </section>
+
+  <!-- VIDEO -->
+  <section class="asset-section video-section">
+    <div class="section-header">
+      <span class="section-icon">🎬</span>
+      <div>
+        <h3>Video</h3>
+        <p>Test public video playback and seeking</p>
+      </div>
+    </div>
+
+    <div class="file-picker">
+      <label
+        for="public-video"
+        class="file-label">
+        <span class="file-label-title">Choose a video</span>
+        <span class="file-label-description">
+          Select a video file to test native HTML playback
+        </span>
+      </label>
+
+      <input
+        id="public-video"
+        type="file"
+        accept="video/*"
+        [disabled]="uploading() !== null"
+        (change)="selectFile('video', $event)" />
+    </div>
+
+    <div class="actions">
+      <button
+        mat-flat-button
+        class="upload-button"
+        [disabled]="!selected().video || uploading() !== null"
+        (click)="upload('video')">
+        {{ uploading() === 'video' ? 'Uploading...' : 'Upload Video' }}
+      </button>
+    </div>
+
+    @if (assets().video; as asset) {
+      <div class="result-card">
+        <div class="result-header">
+          <strong>Uploaded Video</strong>
+          <span
+            class="http-badge"
+            [class.http-error]="asset.status < 200 || asset.status >= 300">
+            HTTP {{ asset.status }}
+          </span>
+        </div>
+
+        <dl>
+          <dt>Filename</dt>
+          <dd>{{ asset.object.fileName }}</dd>
+
+          <dt>Size</dt>
+          <dd>{{ asset.object.size | number }} bytes</dd>
+
+          <dt>MIME type</dt>
+          <dd>{{ asset.object.contentType || 'MIME type unavailable' }}</dd>
+        </dl>
+
+        <div class="media-container">
+          <video
+            controls
+            preload="metadata"
+            [src]="asset.url"></video>
+        </div>
+
+        <a
+          class="secondary-link"
+          [href]="asset.url"
+          target="_blank"
+          rel="noopener">
+          Open Video URL
+        </a>
+      </div>
+    }
+  </section>
+
+  <!-- AUDIO -->
+  <section class="asset-section audio-section">
+    <div class="section-header">
+      <span class="section-icon">🎵</span>
+      <div>
+        <h3>Audio</h3>
+        <p>Test public audio playback and seeking</p>
+      </div>
+    </div>
+
+    <div class="file-picker">
+      <label
+        for="public-audio"
+        class="file-label">
+        <span class="file-label-title">Choose an audio file</span>
+        <span class="file-label-description">
+          Select an audio file to test native HTML playback
+        </span>
+      </label>
+
+      <input
+        id="public-audio"
+        type="file"
+        accept="audio/*"
+        [disabled]="uploading() !== null"
+        (change)="selectFile('audio', $event)" />
+    </div>
+
+    <div class="actions">
+      <button
+        mat-flat-button
+        class="upload-button"
+        [disabled]="!selected().audio || uploading() !== null"
+        (click)="upload('audio')">
+        {{ uploading() === 'audio' ? 'Uploading...' : 'Upload Audio' }}
+      </button>
+    </div>
+
+    @if (assets().audio; as asset) {
+      <div class="result-card">
+        <div class="result-header">
+          <strong>Uploaded Audio</strong>
+          <span
+            class="http-badge"
+            [class.http-error]="asset.status < 200 || asset.status >= 300">
+            HTTP {{ asset.status }}
+          </span>
+        </div>
+
+        <dl>
+          <dt>Filename</dt>
+          <dd>{{ asset.object.fileName }}</dd>
+
+          <dt>Size</dt>
+          <dd>{{ asset.object.size | number }} bytes</dd>
+
+          <dt>MIME type</dt>
+          <dd>{{ asset.object.contentType || 'MIME type unavailable' }}</dd>
+        </dl>
+
+        <div class="media-container audio-container">
+          <audio
+            controls
+            preload="metadata"
+            [src]="asset.url"></audio>
+        </div>
+
+        <a
+          class="secondary-link"
+          [href]="asset.url"
+          target="_blank"
+          rel="noopener">
+          Open Audio URL
+        </a>
+      </div>
+    }
+  </section>
+
+  <!-- RESET -->
+  <div class="reset-section">
+    <button
+      mat-button
+      class="reset-button"
+      [disabled]="uploading() !== null"
+      (click)="reset()">
+      Reset and Delete Test Assets
+    </button>
+  </div>
+
+  @if (message()) {
+    <div
+      class="success"
+      role="status">
+      <span class="message-icon">✓</span>
+      {{ message() }}
+    </div>
+  }
+
+  @if (error()) {
+    <div
+      class="error-container"
+      role="alert">
+      <strong>Operation failed</strong>
+      <pre class="error">{{ error() }}</pre>
+    </div>
+  }
+</section>

@@ -1,0 +1,100 @@
+.automatic-tests {
+  max-width: 1000px;
+  margin: 24px auto;
+  padding: 24px;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.test-group {
+  margin-top: 28px;
+}
+
+.test-case {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+// .test-status {
+//   min-width: 72px;
+//   font-weight: 600;
+// }
+
+.test-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 85px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &[data-status='pending'] {
+    color: #64748b;
+    background: rgba(100, 116, 139, 0.12);
+    border-color: rgba(100, 116, 139, 0.25);
+  }
+
+  &[data-status='running'] {
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.12);
+    border-color: rgba(37, 99, 235, 0.3);
+    animation: status-pulse 1.5s ease-in-out infinite;
+  }
+
+  &[data-status='success'] {
+    color: #16a34a;
+    background: rgba(22, 163, 74, 0.12);
+    border-color: rgba(22, 163, 74, 0.3);
+  }
+
+  &[data-status='failed'] {
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.12);
+    border-color: rgba(220, 38, 38, 0.3);
+  }
+}
+
+@keyframes status-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .test-status[data-status='running'] {
+    animation: none;
+  }
+}
+
+.test-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.test-details p {
+  margin: 4px 0;
+}
+
+.test-error {
+  margin: 8px 0 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  color: #b00020;
+}

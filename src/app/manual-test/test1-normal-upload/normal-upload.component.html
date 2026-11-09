@@ -1,0 +1,112 @@
+<section class="manual-test">
+  <p class="description">
+    Standard upload — maximum <strong>50 MB</strong>. Uploaded files are
+    verified by downloading and comparing SHA-256.
+  </p>
+
+  <div class="file-picker">
+    <label
+      for="normal-upload-file"
+      class="file-label">
+      <span class="file-label-title">Choose a file</span>
+      <span class="file-label-description">
+        Select a file to upload (max. 50 MB)
+      </span>
+    </label>
+
+    <input
+      id="normal-upload-file"
+      type="file"
+      [disabled]="uploading()"
+      (change)="selectFile($event)" />
+  </div>
+
+  @if (selectedFile(); as file) {
+    <div class="selected-file">
+      <span class="file-indicator">✓</span>
+      <div>
+        <strong>{{ file.name }}</strong>
+        <small>
+          {{ file.size }} bytes ·
+          {{ file.type || 'unknown MIME type' }}
+        </small>
+      </div>
+    </div>
+  }
+
+  <div class="actions">
+    <button
+      mat-flat-button
+      class="upload-button"
+      [disabled]="!selectedFile() || uploading()"
+      (click)="upload()">
+      {{ uploading() ? 'Uploading...' : 'Upload File' }}
+    </button>
+
+    <button
+      mat-button
+      class="reset-button"
+      [disabled]="uploading()"
+      (click)="reset()">
+      Reset
+    </button>
+  </div>
+
+  @if (uploading()) {
+    <div
+      class="uploading-message"
+      role="status">
+      <span class="spinner"></span>
+      Uploading and verifying file...
+    </div>
+  }
+
+  @if (message()) {
+    <div
+      class="success"
+      role="status">
+      <span class="message-icon">✓</span>
+      {{ message() }}
+    </div>
+  }
+
+  @if (uploaded(); as object) {
+    <div class="result-card">
+      <h3>Uploaded File</h3>
+
+      <dl>
+        <dt>Key</dt>
+        <dd>{{ object.key }}</dd>
+
+        <dt>Filename</dt>
+        <dd>{{ object.fileName || 'Not reported' }}</dd>
+
+        <dt>Size</dt>
+        <dd>{{ object.size }} bytes</dd>
+
+        <dt>MIME type</dt>
+        <dd>{{ object.contentType || 'Not reported' }}</dd>
+
+        <dt>SHA-256</dt>
+        <dd class="break-word">{{ sha256() }}</dd>
+      </dl>
+
+      <a
+        class="download-button"
+        [href]="downloadUrl()"
+        target="_blank"
+        rel="noopener">
+        Download / Open File
+      </a>
+    </div>
+  }
+
+  @if (error()) {
+    <div
+      class="error-container"
+      role="alert">
+      <strong>Upload failed</strong>
+      <pre class="error">{{ error() }}</pre>
+    </div>
+  }
+</section>

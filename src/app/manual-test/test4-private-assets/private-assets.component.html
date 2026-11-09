@@ -1,0 +1,384 @@
+<section class="manual-test">
+  <testbench-runtime-diagnostics />
+
+  <!-- AUTHENTICATION -->
+  <div
+    class="auth-card"
+    [class.auth-enabled]="authenticated()"
+    [class.auth-disabled]="!authenticated()">
+    <div class="auth-header">
+      <div class="auth-title">
+        <span class="auth-icon">
+          {{ authenticated() ? '🔓' : '🔒' }}
+        </span>
+
+        <div>
+          <h3>Test Authentication</h3>
+          <p>Control access to private test assets</p>
+        </div>
+      </div>
+
+      <span
+        class="auth-badge"
+        [class.enabled]="authenticated()"
+        [class.disabled]="!authenticated()">
+        {{ authenticated() ? 'AUTH ON' : 'AUTH OFF' }}
+      </span>
+    </div>
+
+    <mat-slide-toggle
+      [checked]="authenticated()"
+      [disabled]="uploading() !== null"
+      (change)="setAuthenticated($event.checked)">
+      Authentication:
+      <strong>{{ authenticated() ? 'Enabled' : 'Disabled' }}</strong>
+    </mat-slide-toggle>
+
+    <div class="auth-description">
+      @if (authenticated()) {
+        <span class="auth-status-icon">✓</span>
+        Authentication is enabled. Private asset URLs can be requested.
+      } @else {
+        <span class="auth-status-icon">!</span>
+        Authentication is disabled. Private asset access should be restricted.
+      }
+    </div>
+  </div>
+
+  <!-- SIGNED URL INFO -->
+  <div class="info-card">
+    <span class="info-icon">⏱</span>
+
+    <div>
+      <strong>Signed URL Security</strong>
+      <p>
+        The toggle requests a backend-signed TestBench auth token. Private URLs
+        are key-scoped and expire after
+        <strong>5 minutes</strong>.
+      </p>
+      <p>
+        Turning authentication off clears active media URLs. Already issued
+        signed URLs remain valid until expiry.
+      </p>
+    </div>
+  </div>
+
+  <!-- PRIVATE FILE -->
+  <section class="asset-section file-section">
+    <div class="section-header">
+      <span class="section-icon">📄</span>
+
+      <div>
+        <h3>Private File</h3>
+        <p>Upload and test protected file downloads</p>
+      </div>
+    </div>
+
+    <div class="file-picker">
+      <label
+        for="private-file"
+        class="file-label">
+        <span class="file-label-title">Choose a file</span>
+        <span class="file-label-description">
+          Select a file to test private downloads
+        </span>
+      </label>
+
+      <input
+        id="private-file"
+        type="file"
+        [disabled]="uploading() !== null"
+        (change)="selectFile('file', $event)" />
+    </div>
+
+    <div class="actions">
+      <button
+        mat-flat-button
+        class="upload-button"
+        [disabled]="!selected().file || uploading() !== null"
+        (click)="upload('file')">
+        {{ uploading() === 'file' ? 'Uploading...' : 'Upload File' }}
+      </button>
+    </div>
+
+    @if (assets().file; as asset) {
+      <div class="result-card">
+        <div class="result-header">
+          <strong>Private File Uploaded</strong>
+          <span class="private-badge">PRIVATE</span>
+        </div>
+
+        <dl>
+          <dt>Filename</dt>
+          <dd>{{ asset.object.fileName }}</dd>
+
+          <dt>Size</dt>
+          <dd>{{ asset.object.size | number }} bytes</dd>
+
+          <dt>MIME type</dt>
+          <dd>
+            {{ asset.object.contentType || 'MIME type unavailable' }}
+          </dd>
+        </dl>
+
+        @if (asset.url) {
+          <div class="access-check">
+            <span>Access check</span>
+
+            <span
+              class="http-badge"
+              [class.http-error]="asset.status < 200 || asset.status >= 300">
+              HTTP {{ asset.status }}
+            </span>
+          </div>
+
+          <div class="result-actions">
+            <a
+              class="download-button"
+              [href]="asset.url"
+              target="_blank"
+              rel="noopener">
+              Download Private File
+            </a>
+
+            <a
+              class="secondary-link"
+              [href]="asset.url"
+              target="_blank"
+              rel="noopener">
+              Open in New Tab
+            </a>
+          </div>
+        }
+
+        @if (asset.error) {
+          <div class="asset-error">
+            <strong>Access error</strong>
+            <pre>{{ asset.error }}</pre>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- PRIVATE VIDEO -->
+  <section class="asset-section video-section">
+    <div class="section-header">
+      <span class="section-icon">🎬</span>
+
+      <div>
+        <h3>Private Video</h3>
+        <p>Test authenticated video playback and seeking</p>
+      </div>
+    </div>
+
+    <div class="file-picker">
+      <label
+        for="private-video"
+        class="file-label">
+        <span class="file-label-title">Choose a video</span>
+        <span class="file-label-description">
+          Select a video to test protected media playback
+        </span>
+      </label>
+
+      <input
+        id="private-video"
+        type="file"
+        accept="video/*"
+        [disabled]="uploading() !== null"
+        (change)="selectFile('video', $event)" />
+    </div>
+
+    <div class="actions">
+      <button
+        mat-flat-button
+        class="upload-button"
+        [disabled]="!selected().video || uploading() !== null"
+        (click)="upload('video')">
+        {{ uploading() === 'video' ? 'Uploading...' : 'Upload Video' }}
+      </button>
+    </div>
+
+    @if (assets().video; as asset) {
+      <div class="result-card">
+        <div class="result-header">
+          <strong>Private Video Uploaded</strong>
+          <span class="private-badge">PRIVATE</span>
+        </div>
+
+        <dl>
+          <dt>Filename</dt>
+          <dd>{{ asset.object.fileName }}</dd>
+
+          <dt>Size</dt>
+          <dd>{{ asset.object.size | number }} bytes</dd>
+
+          <dt>MIME type</dt>
+          <dd>
+            {{ asset.object.contentType || 'MIME type unavailable' }}
+          </dd>
+        </dl>
+
+        @if (asset.url) {
+          <div class="access-check">
+            <span>Access check</span>
+
+            <span
+              class="http-badge"
+              [class.http-error]="asset.status < 200 || asset.status >= 300">
+              HTTP {{ asset.status }}
+            </span>
+          </div>
+
+          <div class="media-container">
+            <video
+              controls
+              preload="metadata"
+              [src]="asset.url"></video>
+          </div>
+
+          <a
+            class="secondary-link"
+            [href]="asset.url"
+            target="_blank"
+            rel="noopener">
+            Open Video URL
+          </a>
+        }
+
+        @if (asset.error) {
+          <div class="asset-error">
+            <strong>Access error</strong>
+            <pre>{{ asset.error }}</pre>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- PRIVATE AUDIO -->
+  <section class="asset-section audio-section">
+    <div class="section-header">
+      <span class="section-icon">🎵</span>
+
+      <div>
+        <h3>Private Audio</h3>
+        <p>Test authenticated audio playback and seeking</p>
+      </div>
+    </div>
+
+    <div class="file-picker">
+      <label
+        for="private-audio"
+        class="file-label">
+        <span class="file-label-title">Choose an audio file</span>
+        <span class="file-label-description">
+          Select audio to test protected media playback
+        </span>
+      </label>
+
+      <input
+        id="private-audio"
+        type="file"
+        accept="audio/*"
+        [disabled]="uploading() !== null"
+        (change)="selectFile('audio', $event)" />
+    </div>
+
+    <div class="actions">
+      <button
+        mat-flat-button
+        class="upload-button"
+        [disabled]="!selected().audio || uploading() !== null"
+        (click)="upload('audio')">
+        {{ uploading() === 'audio' ? 'Uploading...' : 'Upload Audio' }}
+      </button>
+    </div>
+
+    @if (assets().audio; as asset) {
+      <div class="result-card">
+        <div class="result-header">
+          <strong>Private Audio Uploaded</strong>
+          <span class="private-badge">PRIVATE</span>
+        </div>
+
+        <dl>
+          <dt>Filename</dt>
+          <dd>{{ asset.object.fileName }}</dd>
+
+          <dt>Size</dt>
+          <dd>{{ asset.object.size | number }} bytes</dd>
+
+          <dt>MIME type</dt>
+          <dd>
+            {{ asset.object.contentType || 'MIME type unavailable' }}
+          </dd>
+        </dl>
+
+        @if (asset.url) {
+          <div class="access-check">
+            <span>Access check</span>
+
+            <span
+              class="http-badge"
+              [class.http-error]="asset.status < 200 || asset.status >= 300">
+              HTTP {{ asset.status }}
+            </span>
+          </div>
+
+          <div class="media-container audio-container">
+            <audio
+              controls
+              preload="metadata"
+              [src]="asset.url"></audio>
+          </div>
+
+          <a
+            class="secondary-link"
+            [href]="asset.url"
+            target="_blank"
+            rel="noopener">
+            Open Audio URL
+          </a>
+        }
+
+        @if (asset.error) {
+          <div class="asset-error">
+            <strong>Access error</strong>
+            <pre>{{ asset.error }}</pre>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- RESET -->
+  <div class="reset-section">
+    <button
+      mat-button
+      class="reset-button"
+      [disabled]="uploading() !== null"
+      (click)="reset()">
+      Reset and Delete Test Assets
+    </button>
+  </div>
+
+  @if (message()) {
+    <div
+      class="success"
+      role="status">
+      <span class="message-icon">✓</span>
+      {{ message() }}
+    </div>
+  }
+
+  @if (error()) {
+    <div
+      class="error-container"
+      role="alert">
+      <strong>Operation failed</strong>
+      <pre class="error">{{ error() }}</pre>
+    </div>
+  }
+</section>
