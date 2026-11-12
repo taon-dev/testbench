@@ -4,5 +4,5 @@ import { TestbenchStorageController } from './testbench-storage.controller';
 
 @Injectable({ providedIn: 'root' })
 export class TestbenchStorageApiService extends TaonBaseAngularService {
-  readonly storageController = this.injectController(TestbenchStorageController);
+  readonly storageController = this.inject(TestbenchStorageController);
 }

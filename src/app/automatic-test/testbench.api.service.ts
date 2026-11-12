@@ -10,15 +10,15 @@ import { TestBenchTranslationsController } from './translations/testbench-transl
 
 @Injectable({ providedIn: 'root' })
 export class TestBenchApiService extends TaonBaseAngularService {
-  readonly responsePrimitives = this.injectController(TestBenchResponseController);
+  readonly responsePrimitives = this.inject(TestBenchResponseController);
 
-  readonly entityMapping = this.injectController(TestBenchEntityController);
+  readonly entityMapping = this.inject(TestBenchEntityController);
 
-  readonly requestParameters = this.injectController(TestBenchRequestController);
+  readonly requestParameters = this.inject(TestBenchRequestController);
 
-  readonly circularReferences = this.injectController(TestBenchCircularController);
+  readonly circularReferences = this.inject(TestBenchCircularController);
 
-  readonly httpErrors = this.injectController(TestBenchErrorsController);
+  readonly httpErrors = this.inject(TestBenchErrorsController);
 
-  readonly testBenchTranslationsController = this.injectController(TestBenchTranslationsController);
+  readonly testBenchTranslationsController = this.inject(TestBenchTranslationsController);
 }
